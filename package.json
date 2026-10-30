@@ -1,6 +1,6 @@
 {
   "name": "picozip",
-  "version": "0.0.0",
+  "version": "0.0.1-beta.1",
   "description": "A truly cross platform zip library designed for memory limited environment, fully written in JS using modern standard JS APIs.",
   "homepage": "https://github.com/limzykenneth/picozip#readme",
   "bugs": {
