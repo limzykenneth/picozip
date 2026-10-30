@@ -1,0 +1,49 @@
+{
+  "name": "picozip",
+  "version": "0.0.0",
+  "description": "A truly cross platform zip library designed for memory limited environment, fully written in JS using modern standard JS APIs.",
+  "homepage": "https://github.com/limzykenneth/picozip#readme",
+  "bugs": {
+    "url": "https://github.com/limzykenneth/picozip/issues"
+  },
+  "license": "MIT",
+  "author": "Kenneth Lim <hello@limzykenneth.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/limzykenneth/picozip.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vite-plus": "^1.2.0"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.2.1",
+      "onFail": "download"
+    }
+  }
+}
