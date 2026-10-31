@@ -3,7 +3,7 @@ import { describe, it, beforeAll, assert } from "vite-plus/test";
 import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
 import zipFile from "@/tests/assets/test.zip?arraybuffer";
 import { env } from "cloudflare:test";
-import { createFetcher } from "@/src/fetchers/cf-workers-r2/cf-workers-r2";
+import { createFetcher } from "@/src/fetcher/cf-workers/r2";
 
 // const network = setupNetwork();
 

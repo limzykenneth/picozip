@@ -2,7 +2,7 @@ import { describe, it, beforeAll, afterAll, assert } from "vite-plus/test";
 import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
 import { network } from "virtual:msw";
 import { http, HttpResponse } from "msw/http";
-import { createFetcher } from "@/src/fetchers/fetch/fetch.ts";
+import { createFetcher } from "@/src/fetcher/fetch/index.ts";
 import zipFile from "@/tests/assets/test.zip?arraybuffer";
 
 describe("Node fetch", () => {

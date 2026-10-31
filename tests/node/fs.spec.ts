@@ -1,7 +1,7 @@
 import { describe, it, beforeAll, assert } from "vite-plus/test";
 import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
 import path from "node:path";
-import { createFetcher } from "@/src/fetchers/node-fs/node-fs.ts";
+import { createFetcher } from "@/src/fetcher/node/fs.ts";
 
 describe("Node fs", () => {
   let fetcher: RangeFetcher;

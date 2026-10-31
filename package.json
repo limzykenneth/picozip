@@ -18,6 +18,10 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.mjs",
+    "./fetcher/cf-workers/r2": "./dist/fetcher/cf-workers/r2.mjs",
+    "./fetcher/fetch": "./dist/fetcher/fetch/index.mjs",
+    "./fetcher/node/fs": "./dist/fetcher/node/fs.mjs",
+    "./fetcher/s3": "./dist/fetcher/s3/index.mjs",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -30,6 +34,9 @@
     "check": "vp check",
     "prepublishOnly": "vp run build",
     "prepare": "vp config"
+  },
+  "dependencies": {
+    "aws4fetch": "^1.0.20"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.11",

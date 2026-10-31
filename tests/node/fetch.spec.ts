@@ -4,7 +4,7 @@ import { setupServer, type SetupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { createFetcher } from "@/src/fetchers/fetch/fetch.ts";
+import { createFetcher } from "@/src/fetcher/fetch/index.ts";
 
 describe("Node fetch", () => {
   let server: SetupServer;

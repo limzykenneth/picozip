@@ -4,7 +4,7 @@ import { describe, it, beforeAll, afterAll, afterEach, assert } from "vite-plus/
 
 import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
 import zipFile from "@/tests/assets/test.zip?arraybuffer";
-import { createFetcher } from "@/src/fetchers/fetch/fetch";
+import { createFetcher } from "@/src/fetcher/fetch/index.ts";
 
 const network = setupNetwork();
 

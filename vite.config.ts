@@ -18,6 +18,7 @@ export default defineConfig({
           include: ["tests/node/*.spec.ts"],
           name: "node",
         },
+        plugins: [arraybuffer()],
       },
       {
         test: {
@@ -55,15 +56,12 @@ export default defineConfig({
     "*": "vp check --fix",
   },
   pack: {
-    deps: {
-      // tsdown <0.23 compatibility: resolve external dependency subpaths.
-      // Remove to preserve subpath imports as written (the new default).
-      // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
-      resolveDepSubpath: true,
-    },
-    dts: {
-      generator: "tsgo",
-    },
+    entry: [
+      "./src/index.ts",
+      {
+        "fetcher/*": "./src/fetcher/*/*.ts",
+      },
+    ],
     exports: true,
   },
   lint: {
