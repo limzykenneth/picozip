@@ -1,16 +1,17 @@
 import { describe, it, beforeAll, afterAll, afterEach, assert } from "vite-plus/test";
-import { Zip, FileEntry, Folder } from "../src";
-import type { SetupServer } from "msw/node";
-import { setupServer } from "msw/node";
+import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
+import { setupServer, type SetupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createFetcher } from "@/src/fetchers/fetch/fetch.ts";
 
-describe("Basic", () => {
+describe("Node fetch", () => {
   let server: SetupServer;
+  let fetcher: RangeFetcher;
 
   beforeAll(async () => {
-    const zipFile = (await fs.readFile(path.resolve(import.meta.dirname, "./assets/test.zip")))
+    const zipFile = (await fs.readFile(path.resolve(import.meta.dirname, "../assets/test.zip")))
       .buffer;
 
     server = setupServer(
@@ -43,6 +44,8 @@ describe("Basic", () => {
     );
 
     server.listen();
+
+    fetcher = createFetcher();
   });
 
   afterEach(() => {});
@@ -52,14 +55,7 @@ describe("Basic", () => {
   });
 
   it("should open the zip file and enable files to be read", async () => {
-    const zip = new Zip("https://example.com/test.zip", async (key, options) => {
-      const res = await fetch(key, {
-        headers: {
-          Range: `bytes=${options.start < 0 ? options.start : `${options.start}-${options.end}`}`,
-        },
-      });
-      return res.body as ReadableStream;
-    });
+    const zip = new Zip("https://example.com/test.zip", fetcher);
 
     await zip.open();
 

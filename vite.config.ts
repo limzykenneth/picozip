@@ -1,6 +1,12 @@
 import { defineConfig } from "vite-plus";
+import path from "node:path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "./"),
+    },
+  },
   staged: {
     "*": "vp check --fix",
   },
@@ -20,6 +26,9 @@ export default defineConfig({
     options: {
       typeAware: true,
       typeCheck: true,
+    },
+    rules: {
+      "typescript/no-useless-default-assignment": "off",
     },
   },
   fmt: {},
