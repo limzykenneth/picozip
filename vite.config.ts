@@ -3,6 +3,7 @@ import path from "node:path";
 import { playwright } from "@vitest/browser-playwright";
 import { msw } from "msw/vite";
 import arraybuffer from "vite-plugin-arraybuffer";
+import { cloudflareTest } from "@cloudflare/vitest-plugin";
 
 export default defineConfig({
   resolve: {
@@ -31,6 +32,22 @@ export default defineConfig({
           },
         },
         plugins: [msw(), arraybuffer()],
+      },
+      {
+        test: {
+          include: ["tests/cloudflare/*.spec.ts"],
+          name: "cloudflare",
+        },
+        plugins: [
+          arraybuffer(),
+          cloudflareTest({
+            miniflare: {
+              compatibilityFlags: ["nodejs_compat"],
+              compatibilityDate: "2026-07-17",
+              r2Buckets: ["BUCKET"],
+            },
+          }),
+        ],
       },
     ],
   },
