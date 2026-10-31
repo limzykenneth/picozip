@@ -22,6 +22,12 @@ export class Zip {
     };
   }
 
+  static async open(key: string, fetcher: RangeFetcher) {
+    const zip = new Zip(key, fetcher);
+    await zip.open();
+    return zip;
+  }
+
   async open() {
     // Read the central directory record to get the directory structure
     const endOfCentralRecordDirectory = await this.fetcher({
