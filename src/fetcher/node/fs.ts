@@ -1,7 +1,8 @@
-import type { RangeFetcher } from "@/src/index.ts";
 import fs from "node:fs";
 import fsPromises, { type FileHandle } from "node:fs/promises";
 import { Readable } from "node:stream";
+
+import type { RangeFetcher } from "@/src/index.ts";
 
 export const createFetcher: () => RangeFetcher = () => {
   let fileHandle: FileHandle;

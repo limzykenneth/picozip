@@ -1,5 +1,6 @@
-import type { RangeFetcher } from "@/src/index.ts";
 import { AwsClient } from "aws4fetch";
+
+import type { RangeFetcher } from "@/src/index.ts";
 
 type CreateReturn = (options: CreateOptions) => RangeFetcher;
 interface CreateOptions {

@@ -1,9 +1,10 @@
-import { defineConfig } from "vite-plus";
 import path from "node:path";
+
+import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
 import { msw } from "msw/vite";
 import arraybuffer from "vite-plugin-arraybuffer";
-import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   resolve: {
@@ -74,5 +75,8 @@ export default defineConfig({
       "@typescript-eslint/no-unused-vars": "warn",
     },
   },
-  fmt: {},
+  fmt: {
+    sortImports: true,
+    sortPackageJson: true,
+  },
 });

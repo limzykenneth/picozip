@@ -1,9 +1,12 @@
-import { describe, it, beforeAll, afterAll, assert } from "vite-plus/test";
-import { Zip, FileEntry, Folder, type RangeFetcher } from "@/src/index.ts";
-import { network } from "virtual:msw";
 import { http, HttpResponse } from "msw/http";
+import { network } from "virtual:msw";
+import { describe, it, beforeAll, afterAll } from "vite-plus/test";
+
 import { createFetcher } from "@/src/fetcher/fetch/index.ts";
+import { Zip, type RangeFetcher } from "@/src/index.ts";
 import zipFile from "@/tests/assets/test.zip?arraybuffer";
+
+import { assertZipBasic } from "../shared/zip";
 
 describe("Node fetch", () => {
   let fetcher: RangeFetcher;
@@ -51,26 +54,7 @@ describe("Node fetch", () => {
 
   it("should open the zip file and enable files to be read", async () => {
     const zip = new Zip("https://example.com/test.zip", fetcher);
-
     await zip.open();
-
-    const decoder = new TextDecoder();
-    for (const entry of zip.entries) {
-      if (entry instanceof FileEntry) {
-        const data = await entry.getArrayBuffer();
-
-        if (entry.name === "file1.txt") {
-          assert.equal(decoder.decode(data), "This is a test file.");
-        } else if (entry.name === "folder1/file2.txt") {
-          assert.equal(decoder.decode(data), "Nostrum rerum eaque vero.");
-        } else {
-          assert.fail("Unexpected file entry");
-        }
-      } else if (entry instanceof Folder) {
-        assert.equal(entry.name, "folder1/");
-      } else {
-        assert.fail("Unexpected entry");
-      }
-    }
+    await assertZipBasic(zip);
   });
 });

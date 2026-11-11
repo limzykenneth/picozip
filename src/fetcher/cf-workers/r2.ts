@@ -1,5 +1,6 @@
-import type { RangeFetcher } from "@/src/index.ts";
 import type { R2Bucket, R2GetOptions, R2ObjectBody } from "@cloudflare/workers-types";
+
+import type { RangeFetcher } from "@/src/index.ts";
 
 type CreateReturn = (r2Bucket: R2Bucket) => RangeFetcher;
 
