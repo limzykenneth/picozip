@@ -19,6 +19,8 @@ export class FileEntry {
   #checksum: number;
   #startOfLocalFileHeader: number;
 
+  #localFileHeader: Promise<ArrayBuffer>;
+
   constructor(fetcher: Zip["fetcher"], options: FileEntryOptions) {
     // this.name = options.name;
     this.#fetcher = fetcher;
@@ -81,22 +83,57 @@ export class FileEntry {
     return this.#startOfLocalFileHeader;
   }
 
-  async getStream() {
-    const localFileHeader = await this.#fetcher({
-      start: this.startOfLocalFileHeader,
-      end: this.startOfLocalFileHeader + 30,
-    }).arrayBuffer();
+  get localFileHeader() {
+    if (!this.#localFileHeader) {
+      this.#localFileHeader = this.#fetcher({
+        start: this.startOfLocalFileHeader,
+        end: this.startOfLocalFileHeader + 30,
+      }).arrayBuffer();
+    }
+    return this.#localFileHeader;
+  }
+
+  async #validateLocalFileHeader({ parseOnly } = { parseOnly: false }) {
+    const localFileHeader = await this.localFileHeader;
     const lfhView = new DataView(localFileHeader);
 
     // Check LFH magic number
     const magicNumber = lfhView.getUint32(0, true);
     if (magicNumber !== 67324752) throw new Error("Mismatched file magic number");
     const compressionMethodBytes = lfhView.getUint16(8, true);
-    const compressionMethod = compressionMethodBytes === 8 ? "deflate" : "none";
+    const compressionMethod =
+      compressionMethodBytes === 8
+        ? "deflate"
+        : compressionMethodBytes === 0
+          ? "uncompressed"
+          : undefined;
     const compressedLength = lfhView.getUint32(18, true);
+    const uncompressedLength = lfhView.getUint32(22, true);
     const filenameLength = lfhView.getUint16(26, true);
+    const checksum = lfhView.getUint32(14, true);
     const extraFieldLength = lfhView.getUint16(28, true);
     const fileStartOffset = this.startOfLocalFileHeader + 30 + filenameLength + extraFieldLength;
+
+    if (!parseOnly) {
+      // Validate against data from CDFH, throw if not match
+      if (compressionMethod !== this.compressionMethod)
+        throw new Error("Compression method not match");
+      if (uncompressedLength !== this.fileSize) throw new Error("File size not match");
+      if (compressedLength !== this.compressedFileSize)
+        throw new Error("Compressed file size not match");
+      if (checksum !== this.checksum) throw new Error("Checksum not match");
+    }
+
+    return {
+      fileStartOffset,
+      compressedLength,
+      compressionMethod,
+    };
+  }
+
+  async getStream() {
+    const { fileStartOffset, compressedLength, compressionMethod } =
+      await this.#validateLocalFileHeader();
 
     const compressedFileStream = await this.#fetcher({
       start: fileStartOffset,
@@ -119,6 +156,4 @@ export class FileEntry {
     const file = await streamToBuffer(stream);
     return file;
   }
-
-  getLocalFileHeader() {}
 }
