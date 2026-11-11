@@ -34,46 +34,51 @@ export class Zip {
 
   async open() {
     // Read the central directory record to get the directory structure
-    const endOfCentralRecordDirectory = await this.fetcher({
+    const endOfCentralDirectoryRecord = await this.fetcher({
       start: -22,
     }).arrayBuffer();
 
-    const view = new DataView(endOfCentralRecordDirectory);
+    const view = new DataView(endOfCentralDirectoryRecord);
     const magicNumber = view.getUint32(0, true);
 
     // Check magic number
     if (magicNumber !== 101010256) {
-      // Read comments length, retry reading CRD
+      // Read comments length, retry reading CDFH
       throw new Error("Comments in zip file not supported yet");
     }
 
-    const numberOfCRD = view.getUint16(10, true);
-    const startOfCRD = view.getUint32(16, true);
-    const crdLength = view.getUint32(12, true);
-    const crd = await this.fetcher({
-      start: startOfCRD,
-      end: startOfCRD + crdLength,
+    const numberOfCDFH = view.getUint16(10, true);
+    const startOfCDFH = view.getUint32(16, true);
+    const cdfhLength = view.getUint32(12, true);
+    const cdfh = await this.fetcher({
+      start: startOfCDFH,
+      end: startOfCDFH + cdfhLength,
     }).arrayBuffer();
 
     let startOffset = 0;
-    const crdArray = new Uint8Array(crd);
-    const crdView = new DataView(crd);
+    const cdfhView = new DataView(cdfh);
     const decoder = new TextDecoder();
-    for (let i = 0; i < numberOfCRD; i++) {
-      // Read each CRD and build the file tree
-      const magicNumber = crdView.getUint32(startOffset, true);
-      if (magicNumber !== 33639248) throw new Error("Mismatched CRD magic number");
+    for (let i = 0; i < numberOfCDFH; i++) {
+      // Read each CDFH and build the file tree
+      const magicNumber = cdfhView.getUint32(startOffset, true);
+      if (magicNumber !== 33639248) throw new Error("Mismatched CDFH magic number");
 
-      const filenameLength = crdView.getUint16(startOffset + 28, true);
-      const filenameSlice = crdArray.slice(startOffset + 46, startOffset + 46 + filenameLength);
+      const filenameLength = cdfhView.getUint16(startOffset + 28, true);
+      const extraFieldLength = cdfhView.getUint16(startOffset + 30, true);
+      const fileCommentLength = cdfhView.getUint16(startOffset + 32, true);
+      const currentCDFHLength = 46 + filenameLength + extraFieldLength + fileCommentLength;
+
+      const currentCDFH = cdfh.slice(startOffset, startOffset + currentCDFHLength);
+      const filenameSlice = currentCDFH.slice(46, 46 + filenameLength);
       const filename = decoder.decode(filenameSlice);
 
       if (!filename.endsWith("/")) {
-        const startOfLocalFileHeader = crdView.getUint32(startOffset + 42, true);
+        const startOfLocalFileHeader = cdfhView.getUint32(startOffset + 42, true);
 
         const file = new FileEntry(this.fetcher, {
           name: filename,
           startOfLocalFileHeader,
+          cdfh: currentCDFH,
         });
         this.entries.push(file);
       } else {
@@ -81,10 +86,7 @@ export class Zip {
         this.entries.push(folder);
       }
 
-      const extraFieldLength = crdView.getUint16(startOffset + 30, true);
-      const fileCommentLength = crdView.getUint16(startOffset + 32, true);
-
-      startOffset = startOffset + 46 + filenameLength + extraFieldLength + fileCommentLength;
+      startOffset = startOffset + currentCDFHLength;
     }
   }
 

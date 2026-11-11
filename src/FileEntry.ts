@@ -4,13 +4,16 @@ import { streamToBuffer } from "./utils.ts";
 interface FileEntryOptions {
   name: string;
   startOfLocalFileHeader: number;
+  cdfh: ArrayBuffer;
 }
 
 export class FileEntry {
   name: string;
   startOfLocalFileHeader: number;
   #fetcher;
-  #filesize: number;
+  #cdfh: ArrayBuffer;
+  // These are data from the central headers, they should match local headers
+  #fileSize: number;
   #compression: string;
   #checksum: number;
 
@@ -18,6 +21,7 @@ export class FileEntry {
     this.name = options.name;
     this.startOfLocalFileHeader = options.startOfLocalFileHeader;
     this.#fetcher = fetcher;
+    this.#cdfh = options.cdfh;
   }
 
   async getStream() {
