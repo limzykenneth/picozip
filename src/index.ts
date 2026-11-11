@@ -1,3 +1,7 @@
+import { FileEntry } from "./FileEntry.ts";
+import { Folder } from "./Folder.ts";
+import { streamToBuffer } from "./utils.ts";
+
 export type RangeFetcher = (
   key: string,
   options: { start: number; end?: number },
@@ -91,87 +95,4 @@ export class Zip {
   }
 }
 
-export class Folder {
-  name: string;
-  entries: Map<string, FileEntry | Folder> = new Map();
-
-  constructor(name: string) {
-    this.name = name;
-  }
-
-  addEntry(name: string, entry: FileEntry | Folder) {
-    this.entries.set(name, entry);
-  }
-}
-
-interface FileEntryOptions {
-  name: string;
-  startOfLocalFileHeader: number;
-}
-
-export class FileEntry {
-  name: string;
-  startOfLocalFileHeader: number;
-  #fetcher;
-
-  constructor(fetcher: Zip["fetcher"], options: FileEntryOptions) {
-    this.name = options.name;
-    this.startOfLocalFileHeader = options.startOfLocalFileHeader;
-    this.#fetcher = fetcher;
-  }
-
-  async getStream() {
-    const localFileHeader = await this.#fetcher({
-      start: this.startOfLocalFileHeader,
-      end: this.startOfLocalFileHeader + 30,
-    }).arrayBuffer();
-    const lfhView = new DataView(localFileHeader);
-
-    // Check LFH magic number
-    const magicNumber = lfhView.getUint32(0, true);
-    if (magicNumber !== 67324752) throw new Error("Mismatched file magic number");
-    const compressionMethodBytes = lfhView.getUint16(8, true);
-    const compressionMethod = compressionMethodBytes === 8 ? "deflate" : "none";
-    const compressedLength = lfhView.getUint32(18, true);
-    const filenameLength = lfhView.getUint16(26, true);
-    const extraFieldLength = lfhView.getUint16(28, true);
-    const fileStartOffset = this.startOfLocalFileHeader + 30 + filenameLength + extraFieldLength;
-
-    const compressedFileStream = await this.#fetcher({
-      start: fileStartOffset,
-      end: fileStartOffset + compressedLength - 1,
-    }).stream;
-
-    let fileStream;
-    if (compressionMethod === "deflate") {
-      const ds = new DecompressionStream("deflate-raw");
-      fileStream = compressedFileStream.pipeThrough(ds);
-    } else {
-      fileStream = compressedFileStream;
-    }
-
-    return fileStream;
-  }
-
-  async getArrayBuffer() {
-    const stream = await this.getStream();
-    const file = await streamToBuffer(stream);
-    return file;
-  }
-}
-
-async function streamToBuffer(stream: ReadableStream): Promise<ArrayBuffer> {
-  const chunks = await Array.fromAsync(stream, (chunk) => chunk);
-  const totalSize = chunks.reduce((acc, arr) => {
-    acc += arr.length;
-    return acc;
-  }, 0);
-
-  const result = new Uint8Array(totalSize);
-  let offset = 0;
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return result.buffer;
-}
+export { FileEntry, Folder };

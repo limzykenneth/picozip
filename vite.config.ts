@@ -71,6 +71,7 @@ export default defineConfig({
     },
     rules: {
       "typescript/no-useless-default-assignment": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
     },
   },
   fmt: {},
