@@ -73,11 +73,7 @@ export class Zip {
       const filename = decoder.decode(filenameSlice);
 
       if (!filename.endsWith("/")) {
-        const startOfLocalFileHeader = cdfhView.getUint32(startOffset + 42, true);
-
         const file = new FileEntry(this.fetcher, {
-          name: filename,
-          startOfLocalFileHeader,
           cdfh: currentCDFH,
         });
         this.entries.push(file);
